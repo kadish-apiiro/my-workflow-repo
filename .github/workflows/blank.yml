@@ -35,33 +35,34 @@ jobs:
           python-version: '3.11'
 
       - name: Make sure python file import argparse and adds parser arguments
-        run: python3 -c "
-        import os
+        run: |
+            python3 <<EOF
+            import os
 
-        current_dir = os.getcwd()
-
-        for file in os.listdir(current_dir):
-          if file.endswith(".py"):
-            with open(os.path.join(current_dir, file), "r") as f:
-              contents = f.read()
-
-              if "import argparse" in contents: import_str = "import argparse"
-              elif "from argparse import ArgumentParser" in contents: import_str = "from argparse import ArgumentParser"
-              else: raise ImportError("Parser arguments are cool and you need to import argparse in order to define them")
-
-              contents_after_import = contents.split(import_str)[-1]
-              if "ArgumentParser()" not in contents_after_import:
-                  raise NotImplementedError("argparse feels sad since you imported it and never created an ArgumentParser object")
-
-              contents_after_parser = contents_after_import.split("ArgumentParser()")[-1]
-              if ".add_argument(" not in contents_after_parser:
-                  raise NotImplementedError("argparse grieves as you created a parser and did not define arguments")
-
-              contents_after_arguments = contents_after_parser.split(".add_argument(")[-1]
-              if ".parse_args()" not in contents_after_arguments:
-                  raise NotImplementedError("You couldn't have hurt argparse more - how could you do everything up to " + \
-                                            "defining arguments and not actually parse them?!")
-        "
+            current_dir = os.getcwd()
+    
+            for file in os.listdir(current_dir):
+              if file.endswith(".py"):
+                with open(os.path.join(current_dir, file), "r") as f:
+                  contents = f.read()
+    
+                  if "import argparse" in contents: import_str = "import argparse"
+                  elif "from argparse import ArgumentParser" in contents: import_str = "from argparse import ArgumentParser"
+                  else: raise ImportError("Parser arguments are cool and you need to import argparse in order to define them")
+    
+                  contents_after_import = contents.split(import_str)[-1]
+                  if "ArgumentParser()" not in contents_after_import:
+                      raise NotImplementedError("argparse feels sad since you imported it and never created an ArgumentParser object")
+    
+                  contents_after_parser = contents_after_import.split("ArgumentParser()")[-1]
+                  if ".add_argument(" not in contents_after_parser:
+                      raise NotImplementedError("argparse grieves as you created a parser and did not define arguments")
+    
+                  contents_after_arguments = contents_after_parser.split(".add_argument(")[-1]
+                  if ".parse_args()" not in contents_after_arguments:
+                      raise NotImplementedError("You couldn't have hurt argparse more - how could you do everything up to " + \
+                                                "defining arguments and not actually parse them?!")
+            EOF
 
       - name: Commend the user for using argparse
         run: |
