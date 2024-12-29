@@ -1,0 +1,68 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**/*.py'  # Trigger only for Python files
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**/*.py'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  check-arg-parsing:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Make sure python file import argparse and adds parser arguments
+        run: python3 -c "
+        import os
+
+        current_dir = os.getcwd()
+
+        for file in os.listdir(current_dir):
+          if file.endswith(".py"):
+            with open(os.path.join(current_dir, file), "r") as f:
+              contents = f.read()
+
+              if "import argparse" in contents: import_str = "import argparse"
+              elif "from argparse import ArgumentParser" in contents: import_str = "from argparse import ArgumentParser"
+              else: raise ImportError("Parser arguments are cool and you need to import argparse in order to define them")
+
+              contents_after_import = contents.split(import_str)[-1]
+              if "ArgumentParser()" not in contents_after_import:
+                  raise NotImplementedError("argparse feels sad since you imported it and never created an ArgumentParser object")
+
+              contents_after_parser = contents_after_import.split("ArgumentParser()")[-1]
+              if ".add_argument(" not in contents_after_parser:
+                  raise NotImplementedError("argparse grieves as you created a parser and did not define arguments")
+
+              contents_after_arguments = contents_after_parser.split(".add_argument(")[-1]
+              if ".parse_args()" not in contents_after_arguments:
+                  raise NotImplementedError("You couldn't have hurt argparse more - how could you do everything up to " + \
+                                            "defining arguments and not actually parse them?!")
+        "
+
+      - name: Commend the user for using argparse
+        run: |
+          echo "You used argparse and that's super cool!"
