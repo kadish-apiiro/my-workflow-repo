@@ -38,9 +38,12 @@ jobs:
                 with open(os.path.join(current_dir, file), "r") as f:
                   contents = f.read()
     
-                  if "import argparse" in contents: import_str = "import argparse"
-                  elif "from argparse import ArgumentParser" in contents: import_str = "from argparse import ArgumentParser"
-                  else: raise ImportError("Parser arguments are cool and you need to import argparse in order to define them")
+                  if "import argparse" in contents: 
+                    import_str = "import argparse"
+                  elif "from argparse import ArgumentParser" in contents:
+                    import_str = "from argparse import ArgumentParser"
+                  else: 
+                    raise ImportError("Parser arguments are cool and you need to import argparse in order to define them")
     
                   contents_after_import = contents.split(import_str)[-1]
                   if "ArgumentParser()" not in contents_after_import:
